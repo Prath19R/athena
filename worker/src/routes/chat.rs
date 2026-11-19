@@ -21,8 +21,14 @@ pub struct ClientMessage {
 struct NvidiaPayload {
     model: String,
     messages: Vec<ClientMessage>,
+    chat_template_kwargs: ChatTemplateKwargs,
     temperature: f32,
     max_tokens: u32,
+}
+
+#[derive(Serialize)]
+struct ChatTemplateKwargs {
+    enable_thinking: bool,
 }
 
 #[derive(Serialize)]
@@ -67,7 +73,10 @@ pub async fn handle_chat(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
     let payload = NvidiaPayload {
         model: MODEL_NAME.into(),
         messages,
-        temperature: 0.7,
+        chat_template_kwargs: ChatTemplateKwargs {
+            enable_thinking: false,
+        },
+        temperature: 0.5,
         max_tokens: 1024,
     };
 
@@ -108,17 +117,15 @@ pub async fn handle_chat(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
         }
     }
 
-    let reply = if success {
+    let raw_reply = if success {
         if let Ok(val) = serde_json::from_str::<serde_json::Value>(&nvidia_text) {
             val.get("choices")
                 .and_then(|c| c.as_array())
                 .and_then(|arr| arr.first())
                 .and_then(|choice| choice.get("message"))
-                .and_then(|msg| {
-                    let content = msg.get("content").and_then(|c| c.as_str()).filter(|s| !s.trim().is_empty());
-                    let reasoning = msg.get("reasoning_content").and_then(|c| c.as_str()).filter(|s| !s.trim().is_empty());
-                    content.or(reasoning)
-                })
+                .and_then(|msg| msg.get("content"))
+                .and_then(|c| c.as_str())
+                .filter(|s| !s.trim().is_empty())
                 .map(|s| s.to_string())
         } else {
             None
@@ -127,7 +134,19 @@ pub async fn handle_chat(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
         None
     };
 
-    let final_reply = reply.unwrap_or_else(|| {
+    // Clean up any stray thinking or analysis preamble
+    let clean_reply = raw_reply.map(|text| {
+        let trimmed = text.trim();
+        if let Some(end) = trimmed.find("</think>") {
+            trimmed[end + 8..].trim().to_string()
+        } else if let Some(formulate) = trimmed.find("**Formulate Response:**") {
+            trimmed[formulate + 23..].trim().to_string()
+        } else {
+            trimmed.to_string()
+        }
+    });
+
+    let final_reply = clean_reply.unwrap_or_else(|| {
         "Athena is momentarily catching her breath due to high traffic. Please try asking your question again in just a moment.".into()
     });
 
