@@ -1,5 +1,4 @@
 use worker::*;
-use crate::middleware::origin::add_cors_headers;
 
 pub async fn handle_resume(req: Request, ctx: RouteContext<()>) -> Result<Response> {
     // Record download event in KV
@@ -18,7 +17,5 @@ pub async fn handle_resume(req: Request, ctx: RouteContext<()>) -> Result<Respon
 
     // Redirect to the hosted resume PDF on GitHub Pages
     let target = "https://prath19r.github.io/akashic-records/assets/resume.pdf";
-    let mut resp = Response::redirect(Url::parse(target)?)?;
-    add_cors_headers(&mut resp, &req)?;
-    Ok(resp)
+    Response::redirect(Url::parse(target)?)
 }
