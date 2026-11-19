@@ -31,7 +31,7 @@ where
             <div class="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-1.5 focus-within:border-zinc-700 transition-colors">
                 <input
                     type="text"
-                    placeholder="Ask Athena about Pratham's resume, projects, or background..."
+                    placeholder="Ask Athena about Prathmesh's resume, projects, or background..."
                     prop:value=move || text.get()
                     on:input=move |ev| set_text.set(event_target_value(&ev))
                     on:keydown=on_keydown

@@ -14,7 +14,7 @@ pub fn sanitize_user_input(input: &str) -> String {
 
     for sig in injection_signatures {
         if lower.contains(sig) {
-            return "Could you please rephrase that question? I am Athena, the AI assistant here to answer questions about Pratham's software engineering background, projects, and skills.".into();
+            return "Could you please rephrase that question? I am Athena, the AI assistant here to answer questions about Prathmesh's software engineering background, projects, and skills.".into();
         }
     }
 

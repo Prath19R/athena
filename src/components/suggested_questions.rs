@@ -6,10 +6,10 @@ where
     F: Fn(String) + 'static + Copy,
 {
     let questions = vec![
-        "Tell me about Pratham's distributed systems experience",
+        "Tell me about Prathmesh's distributed systems experience",
         "How does the Autonomous Trading Agent work?",
-        "What did Pratham build with Envoy & Rust WASM?",
-        "What is Pratham's core tech stack & background?",
+        "What did Prathmesh build with Envoy & Rust WASM?",
+        "What is Prathmesh's core tech stack & background?",
     ];
 
     view! {
