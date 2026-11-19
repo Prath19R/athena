@@ -134,16 +134,23 @@ pub async fn handle_chat(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
         None
     };
 
-    // Clean up any stray thinking or analysis preamble
+    // Clean up any stray thinking or analysis preamble and awkward delimiter artifacts
     let clean_reply = raw_reply.map(|text| {
         let trimmed = text.trim();
-        if let Some(end) = trimmed.find("</think>") {
-            trimmed[end + 8..].trim().to_string()
+        let content = if let Some(end) = trimmed.find("</think>") {
+            trimmed[end + 8..].trim()
         } else if let Some(formulate) = trimmed.find("**Formulate Response:**") {
-            trimmed[formulate + 23..].trim().to_string()
+            trimmed[formulate + 23..].trim()
         } else {
-            trimmed.to_string()
-        }
+            trimmed
+        };
+
+        content
+            .replace(":** - **", ": **")
+            .replace(":** - ", ": ")
+            .replace("** - **", " — ")
+            .replace("-  **", "- **")
+            .to_string()
     });
 
     let final_reply = clean_reply.unwrap_or_else(|| {
