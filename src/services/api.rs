@@ -57,5 +57,5 @@ pub async fn send_chat_message(messages: Vec<ChatMessage>) -> Result<String, Str
         }
     }
 
-    Ok("Athena is momentarily catching her breath due to high traffic. Please ask your question again in just a moment, or reach out to Prathmesh directly at prathmeshranadive@gmail.com.".into())
+    Ok("Athena is momentarily catching her breath due to high traffic. Please ask your question again in just a moment, or reach out to Prathmesh directly at prathmeshranadive@gmail.com or +91 8319057558.".into())
 }

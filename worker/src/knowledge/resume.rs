@@ -3,6 +3,7 @@ pub fn get_resume_context() -> &'static str {
 PRATHMESH RANADIVE
 Software Engineer | Backend & Distributed Systems — Java · Rust · Go · Envoy · AWS · Kafka
 Location: Pune, India
+Phone: +91 8319057558
 Email: prathmeshranadive@gmail.com
 LinkedIn: linkedin.com/in/prathmesh-ranadive
 GitHub: github.com/Prath19R

@@ -63,7 +63,7 @@ pub fn ChatWindow() -> impl IntoView {
                     set_messages.update(|list| {
                         list.push(ChatMessage {
                             role: "assistant".into(),
-                            content: "Athena is momentarily synchronizing with the server. Please try asking again in a moment, or reach out to Prathmesh at prathmeshranadive@gmail.com.".into(),
+                            content: "Athena is momentarily synchronizing with the server. Please try asking again in a moment, or reach out to Prathmesh at prathmeshranadive@gmail.com or +91 8319057558.".into(),
                         });
                     });
                     notify_companion("WAIT");
