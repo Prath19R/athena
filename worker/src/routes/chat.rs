@@ -81,7 +81,7 @@ pub async fn handle_chat(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
         max_tokens: 1024,
     };
 
-    let mut headers = Headers::new();
+    let headers = Headers::new();
     headers.set("Content-Type", "application/json")?;
     headers.set("Authorization", &format!("Bearer {api_key}"))?;
 
