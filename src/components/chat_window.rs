@@ -42,11 +42,11 @@ pub fn ChatWindow() -> impl IntoView {
                         });
                     });
                 }
-                Err(err) => {
+                Err(_) => {
                     set_messages.update(|list| {
                         list.push(ChatMessage {
                             role: "assistant".into(),
-                            content: format!("⚠️ Error: {err}. Please verify your connection or try again shortly."),
+                            content: "Athena is momentarily synchronizing with the server. Please try asking again in a moment, or reach out to Prathmesh at prathmeshranadive@gmail.com.".into(),
                         });
                     });
                 }

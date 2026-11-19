@@ -25,16 +25,6 @@ struct NvidiaPayload {
     max_tokens: u32,
 }
 
-#[derive(Deserialize)]
-struct NvidiaResponse {
-    choices: Vec<NvidiaChoice>,
-}
-
-#[derive(Deserialize)]
-struct NvidiaChoice {
-    message: ClientMessage,
-}
-
 #[derive(Serialize)]
 pub struct ChatReply {
     pub reply: String,
@@ -81,40 +71,67 @@ pub async fn handle_chat(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
         max_tokens: 1024,
     };
 
-    let headers = Headers::new();
-    headers.set("Content-Type", "application/json")?;
-    headers.set("Authorization", &format!("Bearer {api_key}"))?;
-
-    let mut init = RequestInit::new();
-    init.with_method(Method::Post)
-        .with_headers(headers)
-        .with_body(Some(serde_json::to_string(&payload)?.into()));
-
-    let nvidia_req = Request::new_with_init(NVIDIA_URL, &init)?;
-    let mut nvidia_resp = match Fetch::Request(nvidia_req).send().await {
-        Ok(res) => res,
-        Err(e) => {
-            let mut err_resp = Response::error(format!("NVIDIA NIM fetch error: {e}"), 502)?;
-            add_cors_headers(&mut err_resp, &req)?;
-            return Ok(err_resp);
+    let payload_json = match serde_json::to_string(&payload) {
+        Ok(j) => j,
+        Err(_) => {
+            let mut resp = Response::from_json(&ChatReply {
+                reply: "Athena could not format the payload. Please try again.".into(),
+            })?;
+            add_cors_headers(&mut resp, &req)?;
+            return Ok(resp);
         }
     };
 
-    if nvidia_resp.status_code() != 200 {
-        let text = nvidia_resp.text().await.unwrap_or_default();
-        let mut err_resp = Response::error(format!("NVIDIA API upstream error: {text}"), 502)?;
-        add_cors_headers(&mut err_resp, &req)?;
-        return Ok(err_resp);
+    let mut nvidia_text = String::new();
+    let mut success = false;
+
+    for _ in 0..2 {
+        let headers = Headers::new();
+        let _ = headers.set("Content-Type", "application/json");
+        let _ = headers.set("Authorization", &format!("Bearer {api_key}"));
+
+        let mut init = RequestInit::new();
+        init.with_method(Method::Post)
+            .with_headers(headers)
+            .with_body(Some(payload_json.clone().into()));
+
+        if let Ok(nvidia_req) = Request::new_with_init(NVIDIA_URL, &init) {
+            if let Ok(mut resp) = Fetch::Request(nvidia_req).send().await {
+                if resp.status_code() == 200 {
+                    if let Ok(txt) = resp.text().await {
+                        nvidia_text = txt;
+                        success = true;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
-    let nvidia_data: NvidiaResponse = nvidia_resp.json().await?;
-    let reply = nvidia_data
-        .choices
-        .first()
-        .map(|c| c.message.content.clone())
-        .unwrap_or_else(|| "Athena is momentarily busy. Please ask again.".into());
+    let reply = if success {
+        if let Ok(val) = serde_json::from_str::<serde_json::Value>(&nvidia_text) {
+            val.get("choices")
+                .and_then(|c| c.as_array())
+                .and_then(|arr| arr.first())
+                .and_then(|choice| choice.get("message"))
+                .and_then(|msg| {
+                    let content = msg.get("content").and_then(|c| c.as_str()).filter(|s| !s.trim().is_empty());
+                    let reasoning = msg.get("reasoning_content").and_then(|c| c.as_str()).filter(|s| !s.trim().is_empty());
+                    content.or(reasoning)
+                })
+                .map(|s| s.to_string())
+        } else {
+            None
+        }
+    } else {
+        None
+    };
 
-    let mut resp = Response::from_json(&ChatReply { reply })?;
+    let final_reply = reply.unwrap_or_else(|| {
+        "Athena is momentarily catching her breath due to high traffic. Please try asking your question again in just a moment.".into()
+    });
+
+    let mut resp = Response::from_json(&ChatReply { reply: final_reply })?;
     add_cors_headers(&mut resp, &req)?;
     Ok(resp)
 }

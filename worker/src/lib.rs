@@ -13,14 +13,20 @@ async fn main(req: Request, env: Env, _ctx: Context) -> Result<Response> {
 
     // 2. Validate Origin
     if !middleware::origin::is_allowed_origin(&req) {
-        return Response::error("Forbidden: Unauthorized origin", 403);
+        let mut err_resp = Response::error("Forbidden: Unauthorized origin", 403)?;
+        let _ = middleware::origin::add_cors_headers(&mut err_resp, &req);
+        return Ok(err_resp);
     }
 
     // 3. Rate limiting (10 requests per minute per IP via Cloudflare KV)
     let ip = req.headers().get("CF-Connecting-IP")?.unwrap_or_else(|| "127.0.0.1".into());
     if let Ok(kv) = env.kv("ATHENA_KV") {
-        if !middleware::rate_limit::check_rate_limit(&kv, &ip, 10, 60).await? {
-            return Response::error("Rate limit exceeded. Please wait a minute.", 429);
+        if let Ok(allowed) = middleware::rate_limit::check_rate_limit(&kv, &ip, 10, 60).await {
+            if !allowed {
+                let mut err_resp = Response::error("Rate limit exceeded. Please wait a minute.", 429)?;
+                let _ = middleware::origin::add_cors_headers(&mut err_resp, &req);
+                return Ok(err_resp);
+            }
         }
     }
 

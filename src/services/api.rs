@@ -1,4 +1,5 @@
 use gloo_net::http::Request;
+use gloo_timers::future::TimeoutFuture;
 use serde::{Deserialize, Serialize};
 
 #[cfg(debug_assertions)]
@@ -25,24 +26,36 @@ struct ChatResponse {
 
 pub async fn send_chat_message(messages: Vec<ChatMessage>) -> Result<String, String> {
     let body = ChatRequest { messages };
-
     let url = format!("{WORKER_URL}/api/chat");
-    let resp = Request::post(&url)
-        .header("Content-Type", "application/json")
-        .json(&body)
-        .map_err(|e| format!("Failed to serialize request: {e}"))?
-        .send()
-        .await
-        .map_err(|e| format!("Network request failed: {e}"))?;
 
-    if !resp.ok() {
-        return Err(format!("Worker error status: {}", resp.status()));
+    let max_attempts = 3;
+
+    for attempt in 1..=max_attempts {
+        let req = match Request::post(&url)
+            .header("Content-Type", "application/json")
+            .json(&body)
+        {
+            Ok(r) => r,
+            Err(_) => return Ok("Athena encountered a formatting issue. Please try typing your question again.".into()),
+        };
+
+        match req.send().await {
+            Ok(resp) => {
+                if resp.ok() {
+                    if let Ok(parsed) = resp.json::<ChatResponse>().await {
+                        if !parsed.reply.trim().is_empty() {
+                            return Ok(parsed.reply);
+                        }
+                    }
+                }
+            }
+            Err(_) => {}
+        }
+
+        if attempt < max_attempts {
+            TimeoutFuture::new(attempt * 1000).await;
+        }
     }
 
-    let parsed: ChatResponse = resp
-        .json()
-        .await
-        .map_err(|e| format!("Failed to parse response: {e}"))?;
-
-    Ok(parsed.reply)
+    Ok("Athena is momentarily catching her breath due to high traffic. Please ask your question again in just a moment, or reach out to Prathmesh directly at prathmeshranadive@gmail.com.".into())
 }
