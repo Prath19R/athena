@@ -10,7 +10,7 @@ pub fn ChatWindow() -> impl IntoView {
     let initial_messages = vec![
         ChatMessage {
             role: "assistant".into(),
-            content: "Hello! I am Athena, Prathmesh Ranadive's AI guide. I can answer any questions regarding his distributed systems experience at NICE CXone, his Autonomous Trading Agent, his Rust/WASM Envoy plugins, or his overall resume. How can I help you?".into(),
+            content: "Hello! I am Athena, Prathmesh Ranadive's AI guide. I can answer any questions regarding his distributed systems experience at NICE CXone, his Rust/WASM Envoy plugins, his ACDHub real-time gateway, or his overall resume. How can I help you?".into(),
         }
     ];
 

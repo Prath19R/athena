@@ -7,7 +7,7 @@ where
 {
     let questions = vec![
         "Tell me about Prathmesh's distributed systems experience",
-        "How does the Autonomous Trading Agent work?",
+        "How is the Athena AI Guide architected in pure Rust?",
         "What did Prathmesh build with Envoy & Rust WASM?",
         "What is Prathmesh's core tech stack & background?",
     ];
