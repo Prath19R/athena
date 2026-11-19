@@ -13,6 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Install Rust toolchain
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -23,10 +24,19 @@ jobs:
         with:
           workspaces: worker
 
+      # Install worker-build and ensure it's in PATH
       - name: Install worker-build
         uses: taiki-e/install-action@cargo-binstall
-      - run: cargo binstall --no-confirm worker-build
+      - run: |
+          cargo binstall --no-confirm worker-build
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
+      # Explicit build step so we get clear compilation output
+      - name: Build Rust Worker
+        working-directory: worker
+        run: worker-build --release
+
+      # Deploy built artifacts to Cloudflare Workers
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
@@ -35,6 +45,7 @@ jobs:
           workingDirectory: worker
           command: deploy
 
+      # Push NVIDIA_API_KEY as runtime Worker secret
       - name: Push NVIDIA_API_KEY to Worker
         working-directory: worker
         run: echo "${{ secrets.NVIDIA_API_KEY }}" | npx wrangler secret put NVIDIA_API_KEY

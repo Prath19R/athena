@@ -5,9 +5,11 @@ compatibility_date = "2025-01-01"
 [build]
 command = "worker-build --release"
 
-[[kv_namespaces]]
-binding = "ATHENA_KV"
-id = "ATHENA_KV_BINDING"
+# Optional KV namespace for rate limiting and download counters
+# To enable: run `npx wrangler kv namespace create ATHENA_KV` and paste the id below
+# [[kv_namespaces]]
+# binding = "ATHENA_KV"
+# id = "..."
 
 # Secrets required (configured via Wrangler CLI / GitHub Secrets):
 # - NVIDIA_API_KEY
