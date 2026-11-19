@@ -14,9 +14,9 @@ where
     ];
 
     view! {
-        <div class="px-3 pb-2 pt-1 border-t border-zinc-800/80 bg-zinc-950/60">
-            <p class="text-[11px] font-mono uppercase tracking-wider text-zinc-500 mb-1.5 flex items-center gap-1.5">
-                <span class="inline-block w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
+        <div class="px-3 pb-2 pt-2 border-t border-zinc-800/80 bg-zinc-950/80">
+            <p class="text-xs font-mono uppercase tracking-wider text-zinc-400 mb-2 flex items-center gap-1.5 font-semibold">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
                 "Suggested Questions"
             </p>
             <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
@@ -27,7 +27,7 @@ where
                         <button
                             type="button"
                             on:click=move |_| on_select(text_clone.clone())
-                            class="shrink-0 text-xs text-zinc-400 hover:text-zinc-100 bg-zinc-900/80 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 px-2.5 py-1 rounded-lg transition-colors duration-150"
+                            class="shrink-0 text-xs sm:text-sm text-zinc-200 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-emerald-500/60 px-3.5 py-1.5 rounded-xl font-medium transition-colors duration-150 shadow-sm"
                         >
                             {text}
                         </button>
