@@ -1,9 +1,22 @@
 use leptos::prelude::*;
 use leptos::task::spawn_local;
+use gloo_timers::future::TimeoutFuture;
+use wasm_bindgen::JsValue;
 use crate::components::message_bubble::MessageBubble;
 use crate::components::input_bar::InputBar;
 use crate::components::suggested_questions::SuggestedQuestions;
 use crate::services::api::{ChatMessage, send_chat_message};
+
+fn notify_companion(state: &str) {
+    if let Some(win) = web_sys::window() {
+        if let Ok(Some(parent)) = win.parent() {
+            let msg = js_sys::Object::new();
+            let _ = js_sys::Reflect::set(&msg, &JsValue::from_str("type"), &JsValue::from_str("ATHENA_STATE"));
+            let _ = js_sys::Reflect::set(&msg, &JsValue::from_str("state"), &JsValue::from_str(state));
+            let _ = parent.post_message(&msg, "*");
+        }
+    }
+}
 
 #[component]
 pub fn ChatWindow() -> impl IntoView {
@@ -29,6 +42,7 @@ pub fn ChatWindow() -> impl IntoView {
 
         set_messages.update(|list| list.push(user_msg));
         set_is_loading.set(true);
+        notify_companion("THINKING");
 
         let current_history = messages.get();
 
@@ -41,6 +55,9 @@ pub fn ChatWindow() -> impl IntoView {
                             content: reply,
                         });
                     });
+                    notify_companion("ANSWERING");
+                    TimeoutFuture::new(2200).await;
+                    notify_companion("WAIT");
                 }
                 Err(_) => {
                     set_messages.update(|list| {
@@ -49,6 +66,7 @@ pub fn ChatWindow() -> impl IntoView {
                             content: "Athena is momentarily synchronizing with the server. Please try asking again in a moment, or reach out to Prathmesh at prathmeshranadive@gmail.com.".into(),
                         });
                     });
+                    notify_companion("WAIT");
                 }
             }
             set_is_loading.set(false);
