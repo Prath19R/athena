@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 const WORKER_URL: &str = "http://localhost:8787";
 
 #[cfg(not(debug_assertions))]
-const WORKER_URL: &str = "https://athena-proxy.prathmeshranadive.workers.dev";
+const WORKER_URL: &str = "https://athena.prathmeshranadive19.workers.dev";
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct ChatMessage {

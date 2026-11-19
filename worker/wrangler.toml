@@ -1,4 +1,4 @@
-name = "athena-proxy"
+name = "athena"
 main = "build/worker/shim.mjs"
 compatibility_date = "2025-01-01"
 
