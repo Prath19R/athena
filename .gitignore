@@ -1,0 +1,11 @@
+target/
+dist/
+node_modules/
+style/output.css
+worker/target/
+worker/build/
+.env
+.dev.vars
+*.pem
+*.key
+.DS_Store

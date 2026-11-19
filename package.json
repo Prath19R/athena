@@ -1,0 +1,12 @@
+{
+  "name": "athena-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "build:css": "tailwindcss -i style/input.css -o style/output.css --minify",
+    "watch:css": "tailwindcss -i style/input.css -o style/output.css --watch"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  }
+}

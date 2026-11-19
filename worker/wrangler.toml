@@ -1,0 +1,13 @@
+name = "athena-proxy"
+main = "build/worker/shim.mjs"
+compatibility_date = "2025-01-01"
+
+[build]
+command = "worker-build --release"
+
+[[kv_namespaces]]
+binding = "ATHENA_KV"
+id = "ATHENA_KV_BINDING"
+
+# Secrets required (configured via Wrangler CLI / GitHub Secrets):
+# - NVIDIA_API_KEY
