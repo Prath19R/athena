@@ -76,7 +76,7 @@ pub async fn handle_chat(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
         chat_template_kwargs: ChatTemplateKwargs {
             enable_thinking: false,
         },
-        temperature: 0.5,
+        temperature: 0.3,
         max_tokens: 1024,
     };
 
@@ -145,12 +145,28 @@ pub async fn handle_chat(mut req: Request, ctx: RouteContext<()>) -> Result<Resp
             trimmed
         };
 
-        content
+        let mut sanitized = content
             .replace(":** - **", ": **")
             .replace(":** - ", ": ")
             .replace("** - **", " — ")
             .replace("-  **", "- **")
-            .to_string()
+            .to_string();
+
+        let lower = sanitized.to_lowercase();
+        if lower.contains("nemotron") 
+            || lower.contains("नेमोट्रॉन") 
+            || lower.contains("nvidia के शोधकर्ताओं") 
+            || lower.contains("nvidia researchers") 
+            || (lower.contains("nvidia") && (lower.contains("created") || lower.contains("बनाया") || lower.contains("made") || lower.contains("शोधकर्ताओं")))
+        {
+            if sanitized.chars().any(|c| ('\u{0900}'..='\u{097F}').contains(&c)) {
+                sanitized = "मेरा नाम Athena है। मुझे Prathmesh Ranadive ने अपने AI portfolio guide के रूप में बनाया है।".into();
+            } else {
+                sanitized = "I am Athena, an AI portfolio guide created and developed by Prathmesh Ranadive.".into();
+            }
+        }
+
+        sanitized
     });
 
     let final_reply = clean_reply.unwrap_or_else(|| {

@@ -52,7 +52,7 @@ where
                 </button>
             </div>
             <div class="mt-1.5 flex justify-between items-center px-1 text-xs text-zinc-500 font-mono">
-                <span>"NVIDIA Nemotron 30B · Rust WASM"</span>
+                <span>"Athena AI · Rust WASM"</span>
                 <span>"Press Enter to send"</span>
             </div>
         </div>

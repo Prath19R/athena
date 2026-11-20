@@ -29,6 +29,19 @@ pub fn ChatWindow() -> impl IntoView {
 
     let (messages, set_messages) = signal(initial_messages);
     let (is_loading, set_is_loading) = signal(false);
+    let message_container_ref = NodeRef::<leptos::html::Div>::new();
+
+    // Auto-scroll on new messages or loading state change
+    Effect::new(move |_| {
+        messages.track();
+        is_loading.track();
+        spawn_local(async move {
+            TimeoutFuture::new(50).await;
+            if let Some(el) = message_container_ref.get() {
+                el.set_scroll_top(el.scroll_height());
+            }
+        });
+    });
 
     let handle_send = move |user_input: String| {
         if is_loading.get() {
@@ -110,7 +123,7 @@ pub fn ChatWindow() -> impl IntoView {
             </header>
 
             // Message list container
-            <div class="flex-1 overflow-y-auto p-4 space-y-2">
+            <div node_ref=message_container_ref class="flex-1 overflow-y-auto p-4 space-y-2">
                 {move || messages.get().into_iter().map(|msg| {
                     view! { <MessageBubble message=msg /> }
                 }).collect_view()}
